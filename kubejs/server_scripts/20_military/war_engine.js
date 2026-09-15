@@ -24,11 +24,11 @@ function getWar(wars, id) {
                 item = wars.get(num)
                 if (item) return item
             }
-        } catch (me) {}
+        } catch (me) { }
     }
     try {
         if (wars[sId]) return wars[sId]
-    } catch (e) {}
+    } catch (e) { }
     return null
 }
 
@@ -39,11 +39,11 @@ function setWar(wars, id, warObj) {
     if (!wars || id === null || id === undefined) return
     var sId = String(id)
     if (typeof wars.put === 'function') {
-        try { wars.put(sId, warObj) } catch (pe) {}
+        try { wars.put(sId, warObj) } catch (pe) { }
     }
     try {
         wars[sId] = warObj
-    } catch (e) {}
+    } catch (e) { }
 }
 
 /**
@@ -53,11 +53,11 @@ function deleteWar(wars, id) {
     if (!wars || id === null || id === undefined) return
     var sId = String(id)
     if (typeof wars.remove === 'function') {
-        try { wars.remove(sId) } catch (re) {}
+        try { wars.remove(sId) } catch (re) { }
     }
     try {
         delete wars[sId]
-    } catch (e) {}
+    } catch (e) { }
 }
 
 /**
@@ -427,7 +427,7 @@ function requestWarDeclaration(player, targetQuery) {
                 staffP.tell(staffMsg)
             }
         }
-    } catch (pe) {}
+    } catch (pe) { }
     return 1
 }
 
@@ -917,6 +917,8 @@ function requestConflict(player, targetQuery) {
         }
     }
 
+
+
     // 4. Débit atomique des 250 R par camp
     var atkPaid = false
     if (typeof withdrawNationMoney === 'function') {
@@ -996,7 +998,7 @@ function requestConflict(player, targetQuery) {
             var onlineP = pList.get(i)
             if (onlineP) onlineP.playNotifySound('minecraft:ui.toast.challenge_complete', 'master', 1.0, 1.0)
         }
-    } catch (se) {}
+    } catch (se) { }
 
     return 1
 }
@@ -1042,7 +1044,7 @@ function resolveConflictVictory(server, conflictId, winnerTeamId) {
     broadcastMsg(server, 'Victoire Conflit #' + c.id, '§6' + winnerName + ' §aa remporté le Conflit contre §e' + loserName + ' §a! La prime de §6' + pool + ' R §adu pot commun a été versée à leur Trésor national !', '§2')
 
     if (typeof TW_UpdateLeaderboards === 'function') {
-        try { TW_UpdateLeaderboards(server) } catch (eLb) {}
+        try { TW_UpdateLeaderboards(server) } catch (eLb) { }
     }
 
     try {
@@ -1051,7 +1053,7 @@ function resolveConflictVictory(server, conflictId, winnerTeamId) {
             var onlineP = pList.get(i)
             if (onlineP) onlineP.playNotifySound('minecraft:ui.toast.challenge_complete', 'master', 1.0, 1.0)
         }
-    } catch (se) {}
+    } catch (se) { }
 
     return true
 }
@@ -1096,7 +1098,7 @@ function resolveConflictDefensiveVictory(server, conflictId) {
     broadcastMsg(server, 'Victoire Conflit #' + c.id, '§6' + defName + ' §aa vaillamment repoussé l\'assaut et protégé son Étendard pendant 60 minutes ! §a§lVICTOIRE DÉFENSIVE ! §fLa prime de §6' + pool + ' R §fdu pot commun a été versée à leur Trésor national !', '§2')
 
     if (typeof TW_UpdateLeaderboards === 'function') {
-        try { TW_UpdateLeaderboards(server) } catch (eLb) {}
+        try { TW_UpdateLeaderboards(server) } catch (eLb) { }
     }
 
     try {
@@ -1105,7 +1107,7 @@ function resolveConflictDefensiveVictory(server, conflictId) {
             var onlinePD = pListD.get(d)
             if (onlinePD) onlinePD.playNotifySound('minecraft:ui.toast.challenge_complete', 'master', 1.0, 1.0)
         }
-    } catch (seD) {}
+    } catch (seD) { }
 
     return true
 }
@@ -1216,7 +1218,7 @@ function checkConflictsTick(server) {
                         }
                         defAltarPosMsg = ' §7(Autel ennemi en §eX: ' + defAltar.x + ', Y: ' + (defAltar.y + 1) + ', Z: ' + defAltar.z + '§7)'
                     }
-                } catch (afe) {}
+                } catch (afe) { }
 
                 broadcastMsg(server, 'Conflit #' + w.id, '§c§lLE CONFLIT COMMENCE ! §fL\'affrontement entre §e' + w.attackerName + ' §fet §e' + w.defenderName + ' §fest désormais §c§lACTIF§f pour §e60 minutes§f !' + defAltarPosMsg, '§c')
                 try {
@@ -1225,7 +1227,7 @@ function checkConflictsTick(server) {
                         var p = pList.get(i)
                         if (p) p.playNotifySound('minecraft:entity.ender_dragon.growl', 'master', 0.8, 1.2)
                     }
-                } catch (e) {}
+                } catch (e) { }
             } else {
                 var remMs = w.countdownEndsAt - now
                 var remSec = Math.round(remMs / 1000)
@@ -1401,12 +1403,12 @@ function listActiveWars(player) {
             activeWars: warsList
         }
         player.sendData('open_war_registry', { json: JSON.stringify(warPayload) })
-    } catch (we) {}
+    } catch (we) { }
 
     return 1
 }
 
-NetworkEvents.dataReceived('action_war', function(event) {
+NetworkEvents.dataReceived('action_war', function (event) {
     try {
         var player = event.player || event.getEntity()
         if (!player) return
@@ -1423,7 +1425,7 @@ NetworkEvents.dataReceived('action_war', function(event) {
         } else if (action.action === 'prompt_declare') {
             sendMsg(player, 'Guerre', 'Pour déclarer une guerre, tapez : §e/war declare <NomDeLaNation>', '§e')
         }
-    } catch (e) {}
+    } catch (e) { }
 })
 
 // -----------------------------------------------------------------------------
@@ -1431,7 +1433,7 @@ NetworkEvents.dataReceived('action_war', function(event) {
 // TICK PÉRIODIQUE DES GUERRES & CONFLITS VIA MASTER SCHEDULER (CHAQUE SECONDE)
 // -----------------------------------------------------------------------------
 if (typeof TW_Scheduler !== 'undefined' && TW_Scheduler.register) {
-    TW_Scheduler.register('war_system_tick', 20, function(server) {
+    TW_Scheduler.register('war_system_tick', 20, function (server) {
         if (typeof checkCallsToArmsExpiration === 'function') {
             checkCallsToArmsExpiration(server);
         }

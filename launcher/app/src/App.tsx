@@ -349,8 +349,8 @@ export default function App() {
                     {authSubmitting
                       ? "CHARGEMENT..."
                       : authMode === "login"
-                      ? "SE CONNECTER"
-                      : "CRÉER LE COMPTE"}
+                        ? "SE CONNECTER"
+                        : "CRÉER LE COMPTE"}
                   </button>
                 </form>
 
@@ -440,10 +440,10 @@ export default function App() {
                 {isGameRunning
                   ? "JEU EN COURS"
                   : isLaunching
-                  ? "LANCEMENT..."
-                  : isRunning
-                  ? "SYNCHRONISATION..."
-                  : "JOUER"}
+                    ? "LANCEMENT..."
+                    : isRunning
+                      ? "SYNCHRONISATION..."
+                      : "JOUER"}
               </button>
 
               <div className="mc-secondary-actions">
@@ -463,7 +463,7 @@ export default function App() {
                   }}
                   disabled={isBusy}
                 >
-                  VÉRIFIER MODS
+                  VÉRIFIER LES MODS
                 </button>
               </div>
             </div>
