@@ -20,5 +20,5 @@
 	# they will be allowed to continue at their current size, but not able to invite new members.
 	# Default: 0
 	# Range: 0 ~ 2147483647
-	max_party_size: 0
+	max_party_size: 3
 }

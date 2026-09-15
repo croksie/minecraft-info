@@ -6,6 +6,53 @@
 var warBypassedPlayers = {} // { [playerUuidStr]: true }
 var playerWarBypassExpiry = {} // { [playerUuidStr]: timestamp }
 
+
+/**
+ * Vérifie si l'explosion provient d'un mob vanilla (Creeper, Wither, Ghast fireball, etc.)
+ */
+function isVanillaMobExplosion(exploder) {
+    if (!exploder) return false
+    try {
+        // Si l'auteur direct ou son propriétaire est un joueur, ce n'est pas un mob
+        if (exploder.isPlayer && exploder.isPlayer()) return false
+        if (exploder.getOwner && exploder.getOwner()) {
+            var owner = exploder.getOwner()
+            if (owner.isPlayer && owner.isPlayer()) return false
+        }
+
+        var typeStr = exploder.getType ? String(exploder.getType().toString()).toLowerCase() : (exploder.type ? String(exploder.type).toLowerCase() : '')
+
+        // Mobs / projectiles vanilla explosifs
+        if (typeStr.indexOf('creeper') !== -1 ||
+            typeStr.indexOf('wither_skull') !== -1 ||
+            typeStr.indexOf('fireball') !== -1 ||
+            typeStr.indexOf('wither') !== -1) {
+            return true
+        }
+
+        // Vérification via la détection hostile ONU si disponible
+        if (typeof isHostileMob === 'function' && isHostileMob(exploder)) {
+            return true
+        }
+        if (exploder.getOwner && typeof isHostileMob === 'function' && isHostileMob(exploder.getOwner())) {
+            return true
+        }
+
+        // Vérification Java standard net.minecraft.world.entity.Mob
+        if (typeStr.startsWith('minecraft:') && typeStr !== 'minecraft:tnt' && typeStr !== 'minecraft:tnt_minecart') {
+            try {
+                var MobClass = Java.loadClass('net.minecraft.world.entity.Mob')
+                if (MobClass && MobClass.isAssignableFrom(exploder.getClass())) {
+                    return true
+                }
+            } catch (je) { }
+        }
+    } catch (e) {
+        console.error('[WarClaims] Erreur isVanillaMobExplosion : ' + e)
+    }
+    return false
+}
+
 /**
  * Vérifie si le joueur est un administrateur en mode Créatif (bâtisseur/staff)
  */
@@ -25,7 +72,7 @@ function getLevelDimKey(level) {
     try {
         if (typeof level.dimension === 'function') return level.dimension()
         if (level.dimension) return level.dimension
-    } catch (e) {}
+    } catch (e) { }
     var LevelClass = Java.loadClass('net.minecraft.world.level.Level')
     return LevelClass.OVERWORLD
 }
@@ -44,7 +91,7 @@ function isLevelOverworld(level) {
             else loc = String(dimKey)
             return loc.toLowerCase().indexOf('overworld') !== -1
         }
-    } catch (e) {}
+    } catch (e) { }
     return true
 }
 
@@ -116,7 +163,7 @@ function revokeAllWarBypasses(server) {
         var chunksApi = null
         try {
             chunksApi = Java.loadClass('dev.ftb.mods.ftbchunks.api.FTBChunksAPI').api()
-        } catch (ce) {}
+        } catch (ce) { }
         var chunkMgr = (chunksApi && chunksApi.isManagerLoaded()) ? chunksApi.getManager() : null
 
         var players = server.getPlayerList().getPlayers()
@@ -127,7 +174,7 @@ function revokeAllWarBypasses(server) {
             if (chunkMgr && pUuid && !p.isCreative()) {
                 try {
                     chunkMgr.setBypassProtection(pUuid, false)
-                } catch (pe) {}
+                } catch (pe) { }
             }
         }
     } catch (err) {
@@ -174,14 +221,14 @@ function updateWarExplosionPermissions(server) {
             // L'ONU reste toujours 100% protégée contre les explosions
             var shortName = team.getShortName ? String(team.getShortName()).toLowerCase() : ''
             if (shortName === 'onu' || tIdStr === 'cb440140-1d45-4eff-9b10-2bab3d457d63') {
-                try { team.setProperty(FTBChunksProperties.ALLOW_EXPLOSIONS, false) } catch (pe1) {}
+                try { team.setProperty(FTBChunksProperties.ALLOW_EXPLOSIONS, false) } catch (pe1) { }
                 continue
             }
 
             var shouldAllow = isRaid && (teamsInActiveWar[tIdStr] === true)
             try {
                 team.setProperty(FTBChunksProperties.ALLOW_EXPLOSIONS, shouldAllow)
-            } catch (pe2) {}
+            } catch (pe2) { }
         }
     } catch (err) {
         console.error('[WarClaims] Erreur updateWarExplosionPermissions : ' + err)
@@ -247,7 +294,7 @@ function shouldAllowWarAction(player, level, blockX, blockZ) {
 // -----------------------------------------------------------------------------
 
 // Dès que le joueur donne un coup ou commence à casser un bloc ennemi
-BlockEvents.leftClicked(function(event) {
+BlockEvents.leftClicked(function (event) {
     try {
         var player = event.player
         if (!player || player.isFake()) return
@@ -279,12 +326,12 @@ BlockEvents.leftClicked(function(event) {
         if (shouldAllowWarAction(player, level, bx, bz)) {
             setPlayerWarBypass(player, true)
         }
-    } catch (e) {}
+    } catch (e) { }
 })
 
 // Vérification continue pour les joueurs en zone ennemie pendant les Raid Hours via Master Scheduler
 if (typeof TW_Scheduler !== 'undefined' && TW_Scheduler.register) {
-    TW_Scheduler.register('war_claims_bypass', 20, function(server) {
+    TW_Scheduler.register('war_claims_bypass', 20, function (server) {
         try {
             if (!server) return
 
@@ -293,7 +340,7 @@ if (typeof TW_Scheduler !== 'undefined' && TW_Scheduler.register) {
             // Synchroniser les permissions d'explosion FTB Chunks (guerres actives + Raid Hours)
             try {
                 updateWarExplosionPermissions(server)
-            } catch (uepErr) {}
+            } catch (uepErr) { }
 
             var players = server.getPlayerList().getPlayers()
             for (var i = 0; i < players.size(); i++) {
@@ -328,20 +375,20 @@ if (typeof TW_Scheduler !== 'undefined' && TW_Scheduler.register) {
                                     chunkMgr.setBypassProtection(pUuid, false)
                                 }
                             }
-                        } catch (be) {}
+                        } catch (be) { }
                     }
                 }
             }
-        } catch (te) {}
+        } catch (te) { }
     })
 }
 
 
-PlayerEvents.loggedOut(function(event) {
+PlayerEvents.loggedOut(function (event) {
     try {
         var player = event.player
         if (player) setPlayerWarBypass(player, false)
-    } catch (e) {}
+    } catch (e) { }
 })
 
 // =============================================================================
@@ -351,7 +398,7 @@ PlayerEvents.loggedOut(function(event) {
 // -----------------------------------------------------------------------------
 // 2. CONTRÔLE STRICT DU MINAGE (BlockEvents.broken)
 // -----------------------------------------------------------------------------
-BlockEvents.broken(function(event) {
+BlockEvents.broken(function (event) {
     try {
         var player = event.player
         if (!player || player.isFake()) return
@@ -447,7 +494,7 @@ BlockEvents.broken(function(event) {
 // -----------------------------------------------------------------------------
 // 3. CONTRÔLE DE LA CONSTRUCTION (BlockEvents.placed)
 // -----------------------------------------------------------------------------
-BlockEvents.placed(function(event) {
+BlockEvents.placed(function (event) {
     try {
         var player = event.player
         if (!player || player.isFake()) return
@@ -527,7 +574,7 @@ BlockEvents.placed(function(event) {
 // -----------------------------------------------------------------------------
 // 4. CONTRÔLE DES EXPLOSIONS (Canons Create Big Cannons, Missiles Ballistix, TNT)
 // -----------------------------------------------------------------------------
-LevelEvents.beforeExplosion(function(event) {
+LevelEvents.beforeExplosion(function (event) {
     try {
         var level = event.level
         if (!level || level.isClientSide()) return
@@ -546,7 +593,7 @@ LevelEvents.beforeExplosion(function(event) {
                 if (typeof triggerSanctuaryFeedback === 'function') {
                     triggerSanctuaryFeedback(level, event.x, event.y, event.z, chunkX, chunkZ, event.exploder)
                 }
-            } catch (fe) {}
+            } catch (fe) { }
             return
         }
 
@@ -568,7 +615,14 @@ LevelEvents.beforeExplosion(function(event) {
             return
         }
 
-        // Si la nation cible n'est dans aucune guerre active : Invulnérabilité 100%
+        var exploder = event.exploder
+
+        // 3. Exception Mobs Vanilla : Si c'est un mob vanilla (creeper, ghast, wither, etc.), on laisse exploser
+        if (isVanillaMobExplosion(exploder)) {
+            return
+        }
+
+        // 5. Si la nation cible n'est dans aucune guerre active : Invulnérabilité 100% face aux attaques extérieures
         var defWars = getTeamActiveWars(server, defendingTeam.getId())
         if (!defWars || defWars.length === 0) {
             event.cancel()
@@ -582,7 +636,6 @@ LevelEvents.beforeExplosion(function(event) {
         }
 
         // Si l'explosion a un auteur joueur identifié
-        var exploder = event.exploder
         var attackingPlayer = null
         if (exploder) {
             if (exploder.isPlayer()) {
@@ -592,7 +645,7 @@ LevelEvents.beforeExplosion(function(event) {
                     if (exploder.getOwner && exploder.getOwner() && exploder.getOwner().isPlayer()) {
                         attackingPlayer = exploder.getOwner()
                     }
-                } catch (oe) {}
+                } catch (oe) { }
             }
         }
 
@@ -617,7 +670,7 @@ LevelEvents.beforeExplosion(function(event) {
 // -----------------------------------------------------------------------------
 // 5. CONTRÔLE DES INTERACTIONS (Portes, Trappes, Leviers) EN GUERRE
 // -----------------------------------------------------------------------------
-BlockEvents.rightClicked(function(event) {
+BlockEvents.rightClicked(function (event) {
     try {
         var player = event.player
         if (!player || player.isFake()) return
@@ -675,5 +728,5 @@ BlockEvents.rightClicked(function(event) {
                 }
             }
         }
-    } catch (e) {}
+    } catch (e) { }
 })

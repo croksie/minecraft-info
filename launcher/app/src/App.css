@@ -222,11 +222,27 @@ body {
 }
 
 /* Ligne des boutons d'actions */
-.mc-action-row {
+.mc-action-row,
+.mc-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.mc-secondary-actions {
   display: flex;
   gap: 12px;
-  margin-top: 12px;
+  width: 100%;
 }
+
+.mc-secondary-actions .mc-btn,
+.mc-btn-secondary {
+  flex: 1;
+  width: 100%;
+  text-align: center;
+}
+
 
 /* Barre de progression Minecraft */
 .mc-progress-box {
